@@ -30,7 +30,21 @@ sc3 <- CreateSeuratObject(
 ```
 
 ```{r}
-
+# view data
+sc3
+sc3_data[1:5, 1:10]
 ```
 
+```{r}
+# find % mitochondrial DNA
+sc3[["percent.mt"]] <- PercentageFeatureSet(sc3, pattern = "^MT-")
+```
+
+```{r}
+# check mitochondrial percentages
+fig(16,9)
+
+# violin plot of dataset quality
+VlnPlot(sc3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
 
