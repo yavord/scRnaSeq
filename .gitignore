@@ -47,3 +47,4 @@ vignettes/*.pdf
 *.jpg
 *.tsv
 *.zip
+*.mtx
