@@ -8,6 +8,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(Seurat)
 library(dplyr)
 library(patchwork)
+library(ggplot2)
+theme_set(theme_minimal())
 ```
 
 ```{r}
@@ -69,4 +71,69 @@ plot1 <- LabelPoints(
   )
 plot1
 ```
+
+```{r}
+# Scaling for PCA
+genes_names <- rownames(sc3)
+sc3 <- ScaleData(sc3, features = genes_names, verbose = FALSE)
+```
+
+```{r}
+# PCA
+fig(16, 11)
+sc3 <- RunPCA(
+  sc3, features = VariableFeatures(object = sc3), npcs = 50, verbose = FALSE
+  )
+
+# Top 10 most important up/downreg for 1-5PCs
+print(sc3[["pca"]], dims = 1:5, nfeatures = 10) 
+
+# Plot first 5 loadings
+VizDimLoadings(sc3, dims = 1:6, reduction = "pca", ncol = 3)
+```
+
+```{r}
+# % variance by PC
+mat <- GetAssayData(sc3, assay = "RNA", slot = "scale.data")
+pca <- sc3[["pca"]]
+
+# total variance
+total_variance <- sum(matrixStats::rowVars(mat))
+
+eigValues <- (pca@stdev)^2
+varExplained <- eigValues / total_variance
+
+# print variance explained by first 2 PCs
+scales::label_percent()(round(sum(varExplained[c(1,2)]), 4))
+
+```
+
+```{r}
+fig(14, 10)
+
+# variance explained by PC in DF
+var_explained_df <- tibble(pc_number = 1:length(varExplained), var_explained = cumsum(varExplained))
+
+# elbow plot of variance explained by PC
+ggplot(var_explained_df, aes(x = pc_number, y = var_explained)) +
+geom_point(size = 2) +
+geom_line(size = 0.8) +
+scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+labs(title = "Cumulative Variance Explained by the first 50 PCs",
+    x = "PC",
+    y = "Cumulative Variance explained") +
+theme_bw() +
+theme(plot.title = element_text(size = 14),
+          plot.subtitle = element_text(size = 10),
+          axis.text.x= element_text(size = 10),
+          axis.text.y= element_text(size = 10), 
+          axis.title=element_text(size = 10))
+```
+
+```{r}
+# dimplot: plot PC1 & PC2
+fig(14, 10)
+DimPlot(sc3, reduction = "pca", dims = c(1,2))
+```
+
 
