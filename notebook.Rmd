@@ -41,10 +41,32 @@ sc3[["percent.mt"]] <- PercentageFeatureSet(sc3, pattern = "^MT-")
 ```
 
 ```{r}
-# check mitochondrial percentages
+# check mitochondrial percentages => violin plot of dataset quality
 fig(16,9)
-
-# violin plot of dataset quality
 VlnPlot(sc3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
+
+```{r}
+# Normalize read counts
+sc3 <- NormalizeData(
+  sc3, normalization.method = "LogNormalize", scale.factor = 10000
+  )
+```
+
+```{r}
+# Find top 500 most variable features
+sc3 <- FindVariableFeatures(sc3, selection.method = "vst", nfeatures = 500)
+
+# 10 most variable genes
+top10_genes <- head(VariableFeatures(sc3), 10)
+top10_genes
+```
+
+```{r}
+# Plot variable genes and label top 10
+plot1 <- LabelPoints(
+  plot = plot1, points = top10_genes, repel = TRUE, xnudge = -0.8, ynudge = 0
+  )
+plot1
 ```
 
